@@ -1,0 +1,15 @@
+service: automation-deployment
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+plugins:
+  - serverless-finch
+
+custom:
+  client:
+    bucketName: aws-mentoring-program
+    distributionFolder: dist/app
+    indexDocument: index.html
