@@ -1,11 +1,15 @@
 import { Injectable, Injector } from '@angular/core';
-import { EMPTY, Observable } from 'rxjs';
+import { EMPTY, Observable, of, throwError } from 'rxjs';
 import { ApiService } from '../../core/api.service';
-import { switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
+import { NotificationService } from 'src/app/core/notification.service';
 
 @Injectable()
 export class ManageProductsService extends ApiService {
-  constructor(injector: Injector) {
+  constructor(
+    injector: Injector,
+    private readonly notificationService: NotificationService
+  ) {
     super(injector);
   }
 
@@ -25,7 +29,21 @@ export class ManageProductsService extends ApiService {
             'Content-Type': 'text/csv',
           },
         })
-      )
+      ),
+      // eslint-disable-next-line rxjs/no-implicit-any-catch
+      catchError((err) => {
+        if (err.status === 401) {
+          this.notificationService.showError(
+            'Unauthorized - the request has not been applied because it lacks valid authentication credentials for the target resource'
+          );
+        } else if (err.status === 403) {
+          this.notificationService.showError(
+            'Forbidden - you do not have permission to access this resource'
+          );
+        }
+
+        return throwError(() => err);
+      })
     );
   }
 
